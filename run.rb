@@ -1,11 +1,18 @@
 require "csv"
 
-# Usage: ruby run.rb /path/to/file.csv
+# Usage: ruby run.rb /path/to/file.csv AaBbb6Cccd=username1 xxYyyy2341=username2
 
 Result = Struct.new(:id, :net, :nicknames, :payouts)
 Payout = Struct.new(:target_id, :amount)
 
 path = ARGV.shift or abort "No file path provided"
+
+aliases = {}
+
+ARGV.each do |arg|
+  match = arg.match(/\A(\S{10})=(\S+)\z/) or abort "Invalid alias: #{arg.inspect}"
+  aliases[match[1]] = match[2]
+end
 
 results = {}
 
@@ -13,6 +20,11 @@ CSV.foreach(path, headers: true) do |row|
   id = row.fetch("player_id")
   net = row.fetch("net").to_f
   nickname = row.fetch("player_nickname")
+
+  if aliaz = aliases[id]
+    id = nickname = aliaz
+  end
+
   result = results[id] || Result.new(id, 0, [], [])
   result.nicknames = [*result.nicknames, nickname].sort.uniq
   result.net += net
