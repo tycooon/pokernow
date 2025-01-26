@@ -1,5 +1,7 @@
 require "csv"
 
+# Usage: ruby run.rb /path/to/file.csv
+
 Result = Struct.new(:id, :net, :nicknames, :payouts)
 Payout = Struct.new(:target_id, :amount)
 
