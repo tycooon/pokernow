@@ -21,7 +21,9 @@ end
 winners, losers = results.values.partition { |x| x.net.positive? }
 
 losers.sort_by(&:net).each do |loser|
-  winners.sort_by(&:net).each do |winner|
+  until loser.net.zero? do
+    winner = winners.sort_by(&:net).last
+    break if winner.net.zero?
     amount = [loser.net.abs, winner.net].min
     next if amount.zero?
     payout = Payout.new(winner.id, amount)
@@ -35,7 +37,9 @@ show_user = -> (user) do
   user.nicknames.first
 end
 
-losers.sort_by(&:net).each do |loser|
+abort "Invalid results" if results.values.find { |x| !x.net.zero? }
+
+losers.sort_by { |x| -x.payouts.sum(&:amount) }.each do |loser|
   payouts = loser.payouts.map do |payout|
     target = results.fetch(payout.target_id)
     "#{payout.amount} -> #{show_user.call(target)}"
