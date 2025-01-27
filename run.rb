@@ -34,17 +34,17 @@ end
 
 winners, losers = results.values.partition { |x| x.net.positive? }
 
-losers.sort_by(&:net).each do |loser|
-  until loser.net.zero? do
-    winner = winners.sort_by(&:net).last
-    break if winner.net.zero?
-    amount = [loser.net.abs, winner.net].min
-    next if amount.zero?
-    payout = Payout.new(winner.id, amount)
-    winner.net -= amount
-    loser.net += amount
-    loser.payouts << payout
-  end
+loop do
+  loser = losers.sort_by(&:net).first
+  break if loser.net.zero?
+
+  winner = winners.sort_by(&:net).last
+  amount = [loser.net.abs, winner.net].min
+  payout = Payout.new(winner.id, amount)
+
+  winner.net -= amount
+  loser.net += amount
+  loser.payouts << payout
 end
 
 show_user = -> (user) do
